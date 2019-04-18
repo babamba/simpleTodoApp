@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { AppRegistry, StyleSheet, Text, View } from 'react-native';
 import { DangerZone } from 'expo';
+
 const { Lottie } = DangerZone;
 
 import anim from './assets/splash.json';
@@ -49,6 +50,8 @@ export default class lottieloader extends Component {
                   style={{
                     width: 400,
                     height: 400,
+                    alignSelf:'center',
+                    marginBottom: 80,
                     //backgroundColor: '#eee',
                   }}
                   source={this.state.animation}
@@ -66,7 +69,7 @@ const styles = StyleSheet.create({
        alignItems: 'center',
        justifyContent: 'center',
        flex: 1,
-       marginBottom:70
+       paddingLeft: 0,
      },
    });
    
