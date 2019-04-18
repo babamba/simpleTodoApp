@@ -2,6 +2,8 @@ import React from 'react';
 import { StatusBar, SafeAreaView , Dimensions, Platform, StyleSheet, ScrollView} from 'react-native';
 import styled from "styled-components"
 import Todo from "./Todo"
+import uuid from "uuid";
+import { AppLoading } from "expo"
 
 const isIOS = Platform.OS === 'ios' ? true : false
 const { height, width } = Dimensions.get("window")
@@ -52,11 +54,23 @@ const TodoList = styled(ScrollView)`
 export default class App extends React.Component {
 
   state = {
-    newTodo : ""
+    newTodo : "",
+    loadingTodo:false
+  }
+
+  componentDidMount = () => {
+    this._loadTodo();
   }
 
   render() {
-    const { newTodo } = this.state;
+    const { newTodo, loadingTodo } = this.state;
+
+    console.log("loadingTodo" , loadingTodo)
+
+    if(!loadingTodo){
+      return <AppLoading />;
+    }
+
     return (
         <Container>
           <SafeAreaView>
@@ -70,6 +84,7 @@ export default class App extends React.Component {
                 placeholderTextColor={"#999"}
                 returnKeyType={"done"}
                 autoCorrect={false}
+                onSubmitEditing={this._addTodo}
               />
               <TodoList contentContainerStyle={{alignItems:"center"}}>
                 <Todo text={"Hello I'm Todo "}></Todo>
@@ -80,6 +95,12 @@ export default class App extends React.Component {
     );
   }
 
+  _loadTodo = () => {
+    this.setState({
+      loadingTodo: true
+    })
+  }
+
   _onChangeNewTodo = (text) => {
     console.log(this.state.newTodo)
     this.setState({
@@ -87,4 +108,33 @@ export default class App extends React.Component {
     })
   }
 
+  _addTodo = () => {
+    const { newTodo } = this.state;
+    console.log(this.state.todos);
+    if(newTodo !== ""){
+      this.setState(prevState => {
+        const ID = uuid();
+        console.log("ID : ", ID)
+        const newTodoObj = {
+          [ID]:{
+            id : ID,
+            isComplete: false,
+            text : newTodo,
+            createdAt : Date.now()
+          }
+        };
+
+        const newState = {
+          ...prevState,
+          newTodo:"",
+          todos: {
+            ...prevState.todos,
+            ...newTodoObj
+          }
+        }
+
+        return { ...newState };
+      })
+    }
+  }
 }
