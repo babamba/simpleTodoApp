@@ -72,7 +72,7 @@ export default class App extends React.Component {
                 autoCorrect={false}
               />
               <TodoList contentContainerStyle={{alignItems:"center"}}>
-                <Todo></Todo>
+                <Todo text={"Hello I'm Todo "}></Todo>
               </TodoList>
             </Card>
           </SafeAreaView>

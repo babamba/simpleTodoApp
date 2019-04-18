@@ -11,15 +11,22 @@ const Container = styled.View`
      flex-direction: row;
      border-bottom-width:${StyleSheet.hairlineWidth};
      align-items:center;
-`
+     justify-content:space-between;
+`;
 
 const Title = styled.Text`
      font-weight:600;
      font-size:20px;
      margin:20px 0px;
+     
+     ${props =>  props.isComplete ? 
+          "color:black;" 
+               : 
+          "color:grey; text-decoration-line:line-through;" 
+     }   
 `;
 
-const Circle = styled.TouchableOpacity`
+const CircleButton = styled.TouchableOpacity`
      width:30px;
      height:30px;
      border-radius:25px;
@@ -29,25 +36,101 @@ const Circle = styled.TouchableOpacity`
      ${props =>  props.isComplete ? " border-color:red;" : "border-color:grey;" }
 `;
 
+const ColumnSection = styled.View`
+     flex-direction: row;
+     align-items: center;
+     justify-content:space-between;
+     width : ${width / 2};
+`;
+
+const ActionButton = styled.TouchableOpacity`
+`;
+
 const RadioButton = styled.View`
      background-color:white;
 `
+
+const Actions = styled.View`
+     flex-direction:row;
+`;
+
+const ActionContainer = styled.View`
+     margin: 10px 10px;
+`;
+
+const ActionText = styled.Text`
+
+`;
+
+
+const EditInput = styled.TextInput`
+     font-weight:600;
+     font-size:20px;
+     margin:15px 0px;
+     margin-left:24px;
+     padding:5px 0px;
+     width: ${width / 2};
+     ${props =>  props.isComplete ? 
+          "color:black;" 
+               : 
+          "color:grey; text-decoration-line:line-through;" 
+     }   
+`;
 
 class Todo extends Component {
 
      state = {
           isEditing: false,
-          isComplete: false
+          isComplete: false,
+          todoValue:"",
      }
 
      render(){
-          const { isComplete } = this.state;
+          const { isEditing, isComplete, todoValue } = this.state;
+          const { text } = this.props;
           return(
                <Container>
-                    <Circle onPress={this._toggleComplete} isComplete={isComplete} >
-                         <RadioButton />
-                    </Circle>
-                    <Title>Hello I'm Todo </Title>
+                    <ColumnSection>
+                         <CircleButton onPress={this._toggleComplete} isComplete={isComplete} />
+                         { isEditing ? (
+                              <EditInput 
+                                   multiline={true} 
+                                   value={todoValue} 
+                                   isComplete={isComplete}
+                                   onChangeText={this._onChangeText}
+                                   returnKeyType={"done"}
+                                   onBlur={this._finishEditing}
+                              />
+                         ) : (
+                              <Title isComplete={isComplete}>{text}</Title>
+                         )
+                              
+                         }
+                    </ColumnSection>
+
+                    {isEditing ? (
+                         <Actions>
+                              <ActionButton onPressOut={this._finishEditing}>
+                                   <ActionContainer>
+                                        <ActionText>✅</ActionText>
+                                   </ActionContainer>
+                              </ActionButton>
+                         </Actions>
+                         ) : (
+                         <Actions>
+                              <ActionButton onPressOut={this._startEditing}>
+                                   <ActionContainer>
+                                        <ActionText>✏️</ActionText>
+                                   </ActionContainer>
+                              </ActionButton>
+
+                              <ActionButton>
+                                   <ActionContainer>
+                                        <ActionText>❌</ActionText>
+                                   </ActionContainer>
+                              </ActionButton>
+                         </Actions>
+                    )}
                </Container>
           )
      }
@@ -58,6 +141,26 @@ class Todo extends Component {
                return ({
                     isComplete: !prevState.isComplete
                })
+          })
+     }
+
+     _onChangeText = (text) => {
+          this.setState({
+               todoValue: text
+          })
+     }
+
+     _startEditing = () => {
+          const { text } = this.props; 
+          this.setState({
+               isEditing: true,
+               todoValue : text,
+          })
+     }
+
+     _finishEditing = () => {
+          this.setState({
+               isEditing: false
           })
      }
 }
