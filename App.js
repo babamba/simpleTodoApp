@@ -1,5 +1,5 @@
 import React from 'react';
-import { StatusBar, SafeAreaView , Dimensions, Platform, StyleSheet, ScrollView} from 'react-native';
+import { StatusBar, SafeAreaView , Dimensions, Platform, StyleSheet, ScrollView , AsyncStorage} from 'react-native';
 import styled from "styled-components"
 import Todo from "./Todo"
 import uuid from "uuid";
@@ -55,7 +55,8 @@ export default class App extends React.Component {
 
   state = {
     newTodo : "",
-    loadingTodo:false
+    loadingTodo:false,
+    todos : {},
   }
 
   componentDidMount = () => {
@@ -63,9 +64,7 @@ export default class App extends React.Component {
   }
 
   render() {
-    const { newTodo, loadingTodo } = this.state;
-
-    console.log("loadingTodo" , loadingTodo)
+    const { newTodo, loadingTodo, todos } = this.state;
 
     if(!loadingTodo){
       return <AppLoading />;
@@ -87,7 +86,17 @@ export default class App extends React.Component {
                 onSubmitEditing={this._addTodo}
               />
               <TodoList contentContainerStyle={{alignItems:"center"}}>
-                <Todo text={"Hello I'm Todo "}></Todo>
+                  { Object.values(todos).reverse().map(todo => 
+                    <Todo 
+                      key={todo.id} 
+                      deleteTodo={this._deleteTodo}
+                      completeTodo={this._completeTodo}
+                      uncompleteTodo={this._uncompleteTodo}
+                      updateTodo={this._updateTodo}
+                      {...todo} 
+                    />
+                  )}
+                {/* <Todo text={"Hello I'm Todo "}></Todo> */}
               </TodoList>
             </Card>
           </SafeAreaView>
@@ -95,16 +104,93 @@ export default class App extends React.Component {
     );
   }
 
-  _loadTodo = () => {
-    this.setState({
-      loadingTodo: true
-    })
+  _loadTodo = async() => {
+
+    try {
+      const todos = await AsyncStorage.getItem("todos");
+      const parseTodo = JSON.parse(todos);
+      console.log("todos storage", todos)
+      this.setState({
+        loadingTodo: true,
+        todos: parseTodo
+      })
+    } catch (error) {
+      console.log(error)
+    }
   }
 
   _onChangeNewTodo = (text) => {
     console.log(this.state.newTodo)
     this.setState({
       newTodo:text
+    })
+  }
+
+  _uncompleteTodo = (id) => {
+    this.setState(prevState => {
+      const newState = {
+        ...prevState,
+        todos: {
+          ...prevState.todos,
+          [id]:{
+            ...prevState.todos[id],
+              isComplete:false
+          }
+        }
+      }
+      this._saveState(newState.todos);
+      return{ ...newState }
+    })
+  }
+
+  _completeTodo = (id) => {
+    this.setState(prevState => {
+      const newState = {
+        ...prevState,
+        todos: {
+          ...prevState.todos,
+          [id]:{
+            ...prevState.todos[id],
+              isComplete:true
+          }
+        }
+      }
+      this._saveState(newState.todos);
+      return{ ...newState }
+    })
+  }
+
+  _updateTodo = (id, text) => {
+    this.setState(prevState => {
+      const newState = {
+        ...prevState,
+        todos: {
+          ...prevState.todos,
+          [id]:{
+            ...prevState.todos[id],
+            text,
+          }
+        }
+      }
+      this._saveState(newState.todos);
+      return{ ...newState }
+    })
+  }
+
+
+  _deleteTodo = (id) => {
+    this.setState(prevState => {
+        const todos = prevState.todos;
+
+        delete todos[id];
+        const newState = {
+              ...prevState,
+              ...todos
+        }
+        this._saveState(newState.todos);
+        return{
+              ...newState
+        }
     })
   }
 
@@ -132,9 +218,18 @@ export default class App extends React.Component {
             ...newTodoObj
           }
         }
-
+        this._saveState(newState.todos);
         return { ...newState };
       })
     }
   }
+
+  _saveState = (newTodos) => {
+    console.log(newTodos);
+    const saveTodos = AsyncStorage.setItem("todos", JSON.stringify(newTodos));
+  }
+
+
+
+
 }

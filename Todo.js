@@ -1,6 +1,7 @@
 import React, {Component} from "react";
 import { StatusBar, SafeAreaView , Dimensions, Platform, StyleSheet} from 'react-native';
 import styled from "styled-components"
+import PropTypes from "prop-types"
 
 const isIOS = Platform.OS === 'ios' ? true : false
 const { height, width } = Dimensions.get("window")
@@ -20,9 +21,9 @@ const Title = styled.Text`
      margin:20px 0px;
      
      ${props =>  props.isComplete ? 
-          "color:black;" 
-               : 
           "color:grey; text-decoration-line:line-through;" 
+               : 
+          "color:black;" 
      }   
 `;
 
@@ -33,13 +34,12 @@ const CircleButton = styled.TouchableOpacity`
      border-color:red;
      margin-right:20px;
      border-width:3px;
-     ${props =>  props.isComplete ? " border-color:red;" : "border-color:grey;" }
+     ${props =>  props.isComplete ? " border-color:grey;" : "border-color:red;" }
 `;
 
 const ColumnSection = styled.View`
      flex-direction: row;
      align-items: center;
-     justify-content:space-between;
      width : ${width / 2};
 `;
 
@@ -67,27 +67,39 @@ const EditInput = styled.TextInput`
      font-weight:600;
      font-size:20px;
      margin:15px 0px;
-     margin-left:24px;
      padding:5px 0px;
      width: ${width / 2};
      ${props =>  props.isComplete ? 
-          "color:black;" 
-               : 
           "color:grey; text-decoration-line:line-through;" 
+               : 
+          "color:black;" 
      }   
 `;
 
 class Todo extends Component {
 
-     state = {
-          isEditing: false,
-          isComplete: false,
-          todoValue:"",
+     constructor(props){
+          super(props);
+          this.state = {
+               isEditing: false,
+               isComplete: props.isComplete,
+               todoValue:props.text,
+          }
+     }
+
+     static propTypes = {
+          text:PropTypes.string.isRequired,
+          isComplete : PropTypes.bool.isRequired,
+          deleteTodo : PropTypes.func.isRequired,
+          id : PropTypes.string.isRequired,
+          completeTodo : PropTypes.func.isRequired,
+          uncompleteTodo : PropTypes.func.isRequired,
+          updateTodo : PropTypes.func.isRequired,
      }
 
      render(){
-          const { isEditing, isComplete, todoValue } = this.state;
-          const { text } = this.props;
+          const { isEditing , todoValue } = this.state;
+          const { text, deleteTodo, id, isComplete } = this.props;
           return(
                <Container>
                     <ColumnSection>
@@ -124,7 +136,10 @@ class Todo extends Component {
                                    </ActionContainer>
                               </ActionButton>
 
-                              <ActionButton>
+                              <ActionButton onPressOut={(event) => {
+                                   event.stopPropagation; 
+                                   deleteTodo(id)
+                              }}>
                                    <ActionContainer>
                                         <ActionText>❌</ActionText>
                                    </ActionContainer>
@@ -135,13 +150,15 @@ class Todo extends Component {
           )
      }
 
-     _toggleComplete = () => {
-          console.log(this.state.isComplete);
-          this.setState(prevState => {
-               return ({
-                    isComplete: !prevState.isComplete
-               })
-          })
+     _toggleComplete = (event) => {
+          event.stopPropagation();
+          //console.log(this.state.isComplete);
+          const { isComplete, uncompleteTodo, completeTodo, id } = this.props;
+          if(isComplete){
+               uncompleteTodo(id)
+          }else{
+               completeTodo(id)
+          }
      }
 
      _onChangeText = (text) => {
@@ -150,7 +167,8 @@ class Todo extends Component {
           })
      }
 
-     _startEditing = () => {
+     _startEditing = (event) => {
+          event.stopPropagation();
           const { text } = this.props; 
           this.setState({
                isEditing: true,
@@ -158,11 +176,16 @@ class Todo extends Component {
           })
      }
 
-     _finishEditing = () => {
+     _finishEditing = (event) => {
+          event.stopPropagation();
+          const { todoValue } = this.state;
+          const { id, updateTodo } = this.props;
+          updateTodo(id, todoValue);
           this.setState({
                isEditing: false
           })
      }
+
 }
 
 export default Todo
