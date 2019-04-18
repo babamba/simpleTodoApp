@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "kawai_todo",
-    "slug": "kawai_todo",
+    "name": "todo",
+    "slug": "todo",
     "privacy": "public",
     "sdkVersion": "32.0.0",
     "platforms": [
@@ -13,7 +13,7 @@
     "icon": "./assets/icon.png",
     "splash": {
       "image": "./assets/splash.png",
-      "resizeMode": "contain",
+      "resizeMode": "cover",
       "backgroundColor": "#ffffff"
     },
     "updates": {
@@ -24,6 +24,7 @@
     ],
     "ios": {
       "supportsTablet": true
-    }
+    },
+    "description": ""
   }
 }

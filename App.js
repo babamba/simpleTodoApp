@@ -1,9 +1,11 @@
 import React from 'react';
 import { StatusBar, SafeAreaView , Dimensions, Platform, StyleSheet, ScrollView , AsyncStorage} from 'react-native';
+import { View, Text } from 'react-native-animatable';
 import styled from "styled-components"
 import Todo from "./Todo"
 import uuid from "uuid";
-import { AppLoading } from "expo"
+import Lottie from "./Lotti";
+import { AppLoading, SplashScreen } from "expo"
 
 const isIOS = Platform.OS === 'ios' ? true : false
 const { height, width } = Dimensions.get("window")
@@ -24,12 +26,11 @@ const Title = styled.Text`
   margin-bottom:30px;
   z-index:3;
 `
-const Card = styled.View`
+const Card = styled(View)`
   background-color:white;
   flex: 1;
   width: ${width - 25};
-  border-top-left-radius : 12px;
-  border-top-right-radius : 12px;
+  border-radius : 12px;
   /* box-shadow: 5px 55px 100px rgba(50, 50, 50, 0.3); */
   /* elevation:5; */
   ${isIOS ? 
@@ -51,23 +52,43 @@ const TodoList = styled(ScrollView)`
   
 `
 
+const LottieContainer = styled.View`
+  flex:1;
+`;
+
 export default class App extends React.Component {
 
   state = {
     newTodo : "",
     loadingTodo:false,
+    appReady: false,
     todos : {},
   }
 
   componentDidMount = () => {
-    this._loadTodo();
-  }
+    this._loadTodo().then(() => {
+      this.setState({ loadingTodo: true })
+
+      setTimeout(() =>  {
+        this.setState({
+          appReady: true
+        })
+      },1500);
+    })}
 
   render() {
-    const { newTodo, loadingTodo, todos } = this.state;
+    const { newTodo, loadingTodo,appReady, todos } = this.state;
 
     if(!loadingTodo){
       return <AppLoading />;
+    }
+
+    if(!appReady){
+      return (
+        <LottieContainer>
+          <Lottie/>
+        </LottieContainer>
+      );
     }
 
     return (
@@ -75,7 +96,12 @@ export default class App extends React.Component {
           <SafeAreaView>
             <StatusBar barStyle="light-content" />
             <Title>TO DO</Title>
-            <Card>
+            <Card
+              animation="fadeInDown"
+              delay={10} 
+              easing={"ease-in-out"} 
+              useNativeDriver
+            >
               <Input
                 placeholder={"New To Do"} 
                 value={newTodo} 
@@ -112,7 +138,7 @@ export default class App extends React.Component {
       console.log("todos storage", todos)
       this.setState({
         loadingTodo: true,
-        todos: parseTodo
+        todos: parseTodo || {}
       })
     } catch (error) {
       console.log(error)
